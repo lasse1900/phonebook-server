@@ -3,6 +3,7 @@ const express = require("express");
 // const nodemon = require("nodemon");
 const app = express();
 app.use(express.json());
+app.use(express.static('build'))
 const cors = require('cors')
 const morgan = require("morgan");
 
