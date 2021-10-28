@@ -1,3 +1,4 @@
+const { json } = require("express");
 const express = require("express");
 const nodemon = require("nodemon");
 const app = express();
@@ -63,9 +64,13 @@ const generateId = () => {
 app.post("/api/persons", (request, response) => {
   const body = request.body;
 
-  if (!body.name) {
+  if (persons.find((a) => a.name === body.name)) {
+    return response.status(409).json({
+      error: "Name not unique",
+    });
+  } else if (!body.name || !body.number) {
     return response.status(400).json({
-      error: "name missing",
+      error: "name or number missing",
     });
   }
 
