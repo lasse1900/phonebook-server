@@ -4,9 +4,19 @@ const nodemon = require("nodemon");
 const app = express();
 app.use(express.json());
 
-var morgan = require('morgan')
-app.use(morgan('tiny'))
-morgan.token('type', function (req, res) { return req.headers['content-type'] })
+const morgan = require("morgan");
+app.use(morgan("tiny"));
+
+morgan(function (tokens, req, res) {
+  return [
+    tokens.method(req, res),
+    tokens.url(req, res),
+    tokens.status(req, res),
+    tokens.res(req, res, 'content-length'), '-',
+    tokens['response-time'](req, res),
+    (tokens.method(req, res) === "POST") ? JSON.stringify(req.body) : ''
+  ].join(' ')
+})
 
 let persons = [
   {
@@ -89,9 +99,9 @@ app.post("/api/persons", (request, response) => {
 });
 
 const error = (request, response) => {
-  response.status(404).send({ error: '404 unknown endpoint' })
-}
-app.use(error)
+  response.status(404).send({ error: "404 unknown endpoint" });
+};
+app.use(error);
 
 const PORT = 3001;
 app.listen(PORT, () => {
