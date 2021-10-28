@@ -4,6 +4,10 @@ const nodemon = require("nodemon");
 const app = express();
 app.use(express.json());
 
+var morgan = require('morgan')
+app.use(morgan('tiny'))
+morgan.token('type', function (req, res) { return req.headers['content-type'] })
+
 let persons = [
   {
     id: 1,
@@ -83,6 +87,11 @@ app.post("/api/persons", (request, response) => {
   persons = persons.concat(person);
   response.json(person);
 });
+
+const error = (request, response) => {
+  response.status(404).send({ error: '404 unknown endpoint' })
+}
+app.use(error)
 
 const PORT = 3001;
 app.listen(PORT, () => {
