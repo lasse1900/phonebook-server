@@ -3,8 +3,10 @@ const express = require("express");
 const nodemon = require("nodemon");
 const app = express();
 app.use(express.json());
-
+const cors = require('cors')
 const morgan = require("morgan");
+
+app.use(cors());
 app.use(morgan("tiny"));
 
 morgan(function (tokens, req, res) {
@@ -103,7 +105,7 @@ const error = (request, response) => {
 };
 app.use(error);
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
