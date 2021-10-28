@@ -1,6 +1,6 @@
 const { json } = require("express");
 const express = require("express");
-const nodemon = require("nodemon");
+// const nodemon = require("nodemon");
 const app = express();
 app.use(express.json());
 const cors = require('cors')
