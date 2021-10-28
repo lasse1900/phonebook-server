@@ -5,37 +5,37 @@ app.use(express.json());
 
 let persons = [
   {
-    "id": 1,
-    "name": "Arto Hellas",
-    "number": "040-123456"
+    id: 1,
+    name: "Arto Hellas",
+    number: "040-123456",
   },
   {
-    "id": 2,
-    "name": "Martti Tienari",
-    "number": "040-123456"
+    id: 2,
+    name: "Martti Tienari",
+    number: "040-123456",
   },
   {
-    "name": "Dan Abramov",
-    "number": "12-43-2324563",
-    "id": 3
+    name: "Dan Abramov",
+    number: "12-43-2324563",
+    id: 3,
   },
   {
-    "id": 4,
-    "name": "Mary Poppendick",
-    "number": "39-4-11213391"
-  }
-]
+    id: 4,
+    name: "Mary Poppendick",
+    number: "39-4-11213391",
+  },
+];
 
 app.get("/api/persons", (req, res) => {
   res.json(persons);
 });
 
 app.get("/info", (req, res) => {
-  const date = new Date()
+  const date = new Date();
   res.send(`
   <hp>Phonebook has info for ${persons.length} people</p>
   <p>${date}</p>
-  `)
+  `);
 });
 
 app.get("/api/persons/:id", (request, response) => {
@@ -53,6 +53,30 @@ app.delete("/api/persons/:id", (request, response) => {
   persons = persons.filter((person) => person.id !== id);
 
   response.status(204).end();
+});
+
+const generateId = () => {
+  const maxId = persons.length > 0 ? Math.max(...persons.map((n) => n.id)) : 0;
+  return maxId + 1;
+};
+
+app.post("/api/persons", (request, response) => {
+  const body = request.body;
+
+  if (!body.name) {
+    return response.status(400).json({
+      error: "name missing",
+    });
+  }
+
+  const person = {
+    id: generateId(),
+    name: body.name,
+    number: body.number,
+  };
+
+  persons = persons.concat(person);
+  response.json(person);
 });
 
 const PORT = 3001;
