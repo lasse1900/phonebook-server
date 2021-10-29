@@ -1,14 +1,28 @@
 const { json } = require("express");
 const express = require("express");
-// const nodemon = require("nodemon");
 const app = express();
 app.use(express.json());
 app.use(express.static('build'))
 const cors = require('cors')
 const morgan = require("morgan");
+require('dotenv').config();
 
 app.use(cors());
 app.use(morgan("tiny"));
+
+const mongoose = require('mongoose')
+
+const url = process.env.MONGODB_URI
+console.log('url: ', url)
+
+mongoose.connect(url);
+
+const personSchema = new mongoose.Schema({
+  name: String,
+  number: String,
+});
+
+const Person = mongoose.model("Person", personSchema);
 
 morgan(function (tokens, req, res) {
   return [
@@ -44,9 +58,11 @@ let persons = [
   },
 ];
 
-app.get("/api/persons", (req, res) => {
-  res.json(persons);
-});
+app.get('/api/persons', (request, response) => {
+  Person.find({}).then(people => {
+    response.json(people)
+  })
+})
 
 app.get("/info", (req, res) => {
   const date = new Date();

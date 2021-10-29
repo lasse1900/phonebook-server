@@ -1,0 +1,2 @@
+MONGU_URI = `mongodb+srv://fullstack:${password}@cluster0.itz0t.mongodb.net/person?retryWrites=true`;
+PORT=3001
