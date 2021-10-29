@@ -1,31 +1,34 @@
-const { json } = require("express");
-const Person = require('./models/person')
 const express = require("express");
 const app = express();
 app.use(express.json());
-app.use(express.static('build'))
-const cors = require('cors')
+app.use(express.static("build"));
+const cors = require("cors");
 const morgan = require("morgan");
+const { json } = require("express");
+const Person = require("./models/person");
 
 app.use(cors());
 app.use(morgan("tiny"));
+
+let persons = [];
 
 morgan(function (tokens, req, res) {
   return [
     tokens.method(req, res),
     tokens.url(req, res),
     tokens.status(req, res),
-    tokens.res(req, res, 'content-length'), '-',
-    tokens['response-time'](req, res),
-    (tokens.method(req, res) === "POST") ? JSON.stringify(req.body) : ''
-  ].join(' ')
-})
+    tokens.res(req, res, "content-length"),
+    "-",
+    tokens["response-time"](req, res),
+    tokens.method(req, res) === "POST" ? JSON.stringify(req.body) : "",
+  ].join(" ");
+});
 
-app.get('/api/persons', (request, response) => {
-  Person.find({}).then(people => {
-    response.json(people)
-  })
-})
+app.get("/api/persons", (req, res) => {
+  Person.find({}).then((people) => {
+    res.json(people);
+  });
+});
 
 app.get("/info", (req, res) => {
   const date = new Date();
@@ -52,32 +55,30 @@ app.delete("/api/persons/:id", (request, response) => {
   response.status(204).end();
 });
 
-const generateId = () => {
-  const maxId = persons.length > 0 ? Math.max(...persons.map((n) => n.id)) : 0;
-  return maxId + 1;
-};
+app.post("/api/persons", (req, res, next) => {
+  const person = req.body;
 
-app.post("/api/persons", (request, response) => {
-  const body = request.body;
-
-  if (persons.find((a) => a.name === body.name)) {
-    return response.status(409).json({
+  if (persons.find((a) => a.name === req.body.name)) {
+    return res.status(409).json({
       error: "Name not unique",
     });
-  } else if (!body.name || !body.number) {
-    return response.status(400).json({
+  } else if (!person.name || !person.number) {
+    return res.status(400).json({
       error: "name or number missing",
     });
   }
 
-  const person = {
-    id: generateId(),
-    name: body.name,
-    number: body.number,
-  };
+  const newPerson = new Person({
+    name: person.name,
+    number: person.number,
+  });
 
-  persons = persons.concat(person);
-  response.json(person);
+  newPerson
+    .save()
+    .then((savedPerson) => {
+      res.json(savedPerson.toJSON());
+    })
+    .catch((error) => next.error);
 });
 
 const error = (request, response) => {
@@ -85,7 +86,7 @@ const error = (request, response) => {
 };
 app.use(error);
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
