@@ -1,28 +1,14 @@
 const { json } = require("express");
+const Person = require('./models/person')
 const express = require("express");
 const app = express();
 app.use(express.json());
 app.use(express.static('build'))
 const cors = require('cors')
 const morgan = require("morgan");
-require('dotenv').config();
 
 app.use(cors());
 app.use(morgan("tiny"));
-
-const mongoose = require('mongoose')
-
-const url = process.env.MONGODB_URI
-console.log('url: ', url)
-
-mongoose.connect(url);
-
-const personSchema = new mongoose.Schema({
-  name: String,
-  number: String,
-});
-
-const Person = mongoose.model("Person", personSchema);
 
 morgan(function (tokens, req, res) {
   return [
@@ -34,29 +20,6 @@ morgan(function (tokens, req, res) {
     (tokens.method(req, res) === "POST") ? JSON.stringify(req.body) : ''
   ].join(' ')
 })
-
-let persons = [
-  {
-    id: 1,
-    name: "Arto Hellas",
-    number: "040-123456",
-  },
-  {
-    id: 2,
-    name: "Martti Tienari",
-    number: "040-123456",
-  },
-  {
-    name: "Dan Abramov",
-    number: "12-43-2324563",
-    id: 3,
-  },
-  {
-    id: 4,
-    name: "Mary Poppendick",
-    number: "39-4-11213391",
-  },
-];
 
 app.get('/api/persons', (request, response) => {
   Person.find({}).then(people => {
