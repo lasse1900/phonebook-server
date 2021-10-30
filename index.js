@@ -48,11 +48,16 @@ app.get("/api/persons/:id", (request, response) => {
   }
 });
 
-app.delete("/api/persons/:id", (request, response) => {
-  const id = Number(request.params.id);
-  persons = persons.filter((person) => person.id !== id);
-
-  response.status(204).end();
+app.delete("/api/persons/:id", (req, res, next) => {
+  Person.findByIdAndRemove(req.params.id)
+    .then((person) => {
+      if (person) {
+        res.status(200).end();
+      } else {
+        res.status(204).end();
+      }
+    })
+    .catch((error) => next(error));
 });
 
 app.post("/api/persons", (req, res, next) => {
