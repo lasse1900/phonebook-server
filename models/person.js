@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 require("dotenv").config();
-
+var uniqueValidator = require('mongoose-unique-validator');
 const url = process.env.MONGODB_URI;
 
 mongoose
@@ -13,8 +13,17 @@ mongoose
   });
 
 const personSchema = new mongoose.Schema({
-  name: String,
-  number: String,
+  name: {
+    type: String,
+    minlength: 5,
+    required: true,
+    unique: true,
+  },
+  number: {
+    type: String,
+    minlength: 8,
+    required: true,
+  },
 });
 
 personSchema.set("toJSON", {
@@ -24,5 +33,7 @@ personSchema.set("toJSON", {
     delete returnedObject.__v;
   },
 });
+
+personSchema.plugin(uniqueValidator);
 
 module.exports = mongoose.model("Person", personSchema);
