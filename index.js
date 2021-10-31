@@ -1,14 +1,13 @@
 const express = require("express");
 const app = express();
-app.use(express.json());
-app.use(express.static("build"));
 const cors = require("cors");
 const morgan = require("morgan");
-const { json } = require("express");
 const Person = require("./models/person");
 
-app.use(cors());
+app.use(express.static("build"));
+app.use(express.json());
 app.use(morgan("tiny"));
+app.use(cors());
 
 let persons = [];
 
@@ -41,22 +40,28 @@ app.get("/api/persons", (req, res) => {
   });
 });
 
-app.get("/info", (req, res) => {
-  const date = new Date();
-  res.send(`
-  <hp>Phonebook has info for ${persons.length} people</p>
-  <p>${date}</p>
-  `);
+app.get("/info", (req, res, next) => {
+  Person.find({})
+    .then((people) => {
+      const date = new Date();
+      res.send(`
+      <p>Phonebook has info for ${people.length} people</p>
+      <p>${date}</p>
+      `);
+    })
+    .catch((error) => next(error));
 });
 
-app.get("/api/persons/:id", (request, response) => {
-  const id = Number(request.params.id);
-  const person = persons.find((person) => person.id === id);
-  if (person) {
-    response.json(person);
-  } else {
-    response.status(404).end();
-  }
+app.get("/api/persons/:id", (req, res, next) => {
+  Person.findById(req.params.id)
+    .then((person) => {
+      if (person) {
+        res.json(person);
+      } else {
+        res.status(404).end();
+      }
+    })
+    .catch((error) => next(error));
 });
 
 app.delete("/api/persons/:id", (req, res, next) => {
@@ -113,6 +118,11 @@ app.put("/api/persons/:id", (req, res, next) => {
 });
 
 app.use(errorHandler);
+
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: "unknown endpoint" });
+};
+app.use(unknownEndpoint);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
