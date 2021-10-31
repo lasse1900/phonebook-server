@@ -12,6 +12,17 @@ app.use(morgan("tiny"));
 
 let persons = [];
 
+const errorHandler = (error, req, res, next) => {
+  console.error(error.message);
+
+  if (error.name === "CastError") {
+    return res.status(400).send({ error: "malformatted id" });
+  } else if (error.name === "ValidationError") {
+    return res.status(400).json({ error: error.message });
+  }
+  next(error);
+};
+
 morgan(function (tokens, req, res) {
   return [
     tokens.method(req, res),
@@ -52,7 +63,7 @@ app.delete("/api/persons/:id", (req, res, next) => {
   Person.findByIdAndRemove(req.params.id)
     .then((person) => {
       if (person) {
-        res.status(200).end();
+        res.status(200).send(`person: ${person.name}, deleted from phonebook`);
       } else {
         res.status(204).end();
       }
@@ -83,13 +94,10 @@ app.post("/api/persons", (req, res, next) => {
     .then((savedPerson) => {
       res.json(savedPerson.toJSON());
     })
-    .catch((error) => next.error);
+    .catch((error) => next(error));
 });
 
-const error = (request, response) => {
-  response.status(404).send({ error: "404 unknown endpoint" });
-};
-app.use(error);
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

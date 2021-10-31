@@ -3,7 +3,14 @@ require("dotenv").config();
 
 const url = process.env.MONGODB_URI;
 
-mongoose.connect(url);
+mongoose
+  .connect(url, { useNewUrlParser: true })
+  .then((result) => {
+    console.log("connected to MongoDB");
+  })
+  .catch((error) => {
+    console.log("error connecting to MongoDB:", error.message);
+  });
 
 const personSchema = new mongoose.Schema({
   name: String,
